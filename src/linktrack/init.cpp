@@ -1,16 +1,27 @@
 #include "init.h"
 
-#include <nlink_parser/LinktrackAnchorframe0.h>
-#include <nlink_parser/LinktrackNodeframe0.h>
-#include <nlink_parser/LinktrackNodeframe1.h>
-#include <nlink_parser/LinktrackNodeframe2.h>
-#include <nlink_parser/LinktrackNodeframe3.h>
-#include <nlink_parser/LinktrackNodeframe4.h>
-#include <nlink_parser/LinktrackNodeframe5.h>
-#include <nlink_parser/LinktrackNodeframe6.h>
-#include <nlink_parser/LinktrackTagframe0.h>
-#include <ros/ros.h>
-#include <std_msgs/String.h>
+// #include <nlink_parser/LinktrackAnchorframe0.h>
+// #include <nlink_parser/LinktrackNodeframe0.h>
+// #include <nlink_parser/LinktrackNodeframe1.h>
+// #include <nlink_parser/LinktrackNodeframe2.h>
+// #include <nlink_parser/LinktrackNodeframe3.h>
+// #include <nlink_parser/LinktrackNodeframe4.h>
+// #include <nlink_parser/LinktrackNodeframe5.h>
+// #include <nlink_parser/LinktrackNodeframe6.h>
+// #include <nlink_parser/LinktrackTagframe0.h>
+#include "nlink_parser/msg/linktrack_anchorframe0.hpp"
+#include "nlink_parser/msg/linktrack_nodeframe0.hpp"
+#include "nlink_parser/msg/linktrack_nodeframe1.hpp"
+#include "nlink_parser/msg/linktrack_nodeframe2.hpp"
+#include "nlink_parser/msg/linktrack_nodeframe3.hpp"
+#include "nlink_parser/msg/linktrack_nodeframe4.hpp"
+#include "nlink_parser/msg/linktrack_nodeframe5.hpp"
+#include "nlink_parser/msg/linktrack_nodeframe6.hpp"
+#include "nlink_parser/msg/linktrack_tagframe0.hpp"
+// #include <ros/ros.h>
+#include "rclcpp/rclcpp.hpp"
+// #include <std_msgs/String.h>
+#include "std_msgs/msg/string.hpp"
 
 #include "nutils.h"
 #include "protocols.h"
@@ -23,19 +34,19 @@
 
 namespace linktrack
 {
-  nlink_parser::LinktrackAnchorframe0 g_msg_anchorframe0;
-  nlink_parser::LinktrackTagframe0 g_msg_tagframe0;
-  nlink_parser::LinktrackNodeframe0 g_msg_nodeframe0;
-  nlink_parser::LinktrackNodeframe1 g_msg_nodeframe1;
-  nlink_parser::LinktrackNodeframe2 g_msg_nodeframe2;
-  nlink_parser::LinktrackNodeframe3 g_msg_nodeframe3;
-  nlink_parser::LinktrackNodeframe4 g_msg_nodeframe4;
-  nlink_parser::LinktrackNodeframe5 g_msg_nodeframe5;
-  nlink_parser::LinktrackNodeframe6 g_msg_nodeframe6;
+  nlink_parser::msg::LinktrackAnchorframe0 g_msg_anchorframe0;
+  nlink_parser::msg::LinktrackTagframe0 g_msg_tagframe0;
+  nlink_parser::msg::LinktrackNodeframe0 g_msg_nodeframe0;
+  nlink_parser::msg::LinktrackNodeframe1 g_msg_nodeframe1;
+  nlink_parser::msg::LinktrackNodeframe2 g_msg_nodeframe2;
+  nlink_parser::msg::LinktrackNodeframe3 g_msg_nodeframe3;
+  nlink_parser::msg::LinktrackNodeframe4 g_msg_nodeframe4;
+  nlink_parser::msg::LinktrackNodeframe5 g_msg_nodeframe5;
+  nlink_parser::msg::LinktrackNodeframe6 g_msg_nodeframe6;
 
   serial::Serial *serial_;
 
-  Init::Init(NProtocolExtracter *protocol_extraction, serial::Serial *serial)
+  Init::Init(NProtocolExtracter *protocol_extraction, serial::Serial *serial, rclcpp::Node::SharedPtr node)
   {
     serial_ = serial;
     initDataTransmission();
@@ -48,34 +59,39 @@ namespace linktrack
     initNodeFrame4(protocol_extraction);
     initNodeFrame5(protocol_extraction);
     initNodeFrame6(protocol_extraction);
+    nh_ = node;
   }
 
-  static void DTCallback(const std_msgs::String::ConstPtr &msg)
+  static void DTCallback(const std_msgs::msg::String &msg)
   {
     if (serial_)
-      serial_->write(msg->data);
+      serial_->write(msg.data);
   }
 
   void Init::initDataTransmission()
   {
-    dt_sub_ =
-        nh_.subscribe("nlink_linktrack_data_transmission", 1000, DTCallback);
+    // dt_sub_ =
+    //     nh_.subscribe("nlink_linktrack_data_transmission", 1000, DTCallback);
+    dt_sub_ = nh_->create_subscription<std_msgs::msg::String>("nlink_linktrack_data_transmission", 1000, DTCallback);
   }
 
   void Init::initAnchorFrame0(NProtocolExtracter *protocol_extraction)
   {
     auto protocol = new NLT_ProtocolAnchorFrame0;
+    auto topic = "nlink_linktrack_anchorframe0";
+    static auto publishers_ = nh_->create_publisher<nlink_parser::msg::LinktrackAnchorframe0>(topic, 200);
+    TopicAdvertisedTip(topic, nh_);
     protocol_extraction->AddProtocol(protocol);
     protocol->SetHandleDataCallback(
         [=]
         {
-          if (!publishers_[protocol])
-          {
-            auto topic = "nlink_linktrack_anchorframe0";
-            publishers_[protocol] =
-                nh_.advertise<nlink_parser::LinktrackAnchorframe0>(topic, 200);
-            TopicAdvertisedTip(topic);
-          }
+          // if (!publishers_[protocol])
+          // {
+          //   auto topic = "nlink_linktrack_anchorframe0";
+          //   publishers_[protocol] =
+          //       nh_.advertise<nlink_parser::LinktrackAnchorframe0>(topic, 200);
+          //   TopicAdvertisedTip(topic);
+          // }
           auto data = nlt_anchorframe0_.result;
           g_msg_anchorframe0.role = data.role;
           g_msg_anchorframe0.id = data.id;
@@ -94,24 +110,28 @@ namespace linktrack
             ARRAY_ASSIGN(msg_node.dis_arr, node->dis_arr)
             msg_nodes.push_back(msg_node);
           }
-          publishers_.at(protocol).publish(g_msg_anchorframe0);
+          // publishers_.at(protocol).publish(g_msg_anchorframe0);
+          publishers_->publish(g_msg_anchorframe0);
         });
   }
 
   void Init::initTagFrame0(NProtocolExtracter *protocol_extraction)
   {
     auto protocol = new NLT_ProtocolTagFrame0;
+    auto topic = "nlink_linktrack_tagframe0";
+    static auto publishers_ = nh_->create_publisher<nlink_parser::msg::LinktrackTagframe0>(topic, 200);
+    TopicAdvertisedTip(topic, nh_);
     protocol_extraction->AddProtocol(protocol);
     protocol->SetHandleDataCallback(
         [=]
         {
-          if (!publishers_[protocol])
-          {
-            auto topic = "nlink_linktrack_tagframe0";
-            publishers_[protocol] =
-                nh_.advertise<nlink_parser::LinktrackTagframe0>(topic, 200);
-            TopicAdvertisedTip(topic);
-          }
+          // if (!publishers_[protocol])
+          // {
+          //   auto topic = "nlink_linktrack_tagframe0";
+          //   // publishers_[protocol] =
+          //   //     nh_.advertise<nlink_parser::LinktrackTagframe0>(topic, 200);
+          //   TopicAdvertisedTip(topic);
+          // }
 
           const auto &data = g_nlt_tagframe0.result;
           auto &msg_data = g_msg_tagframe0;
@@ -130,25 +150,31 @@ namespace linktrack
           ARRAY_ASSIGN(msg_data.angle_3d, data.angle_3d)
           ARRAY_ASSIGN(msg_data.quaternion, data.quaternion)
 
-          publishers_.at(protocol).publish(msg_data);
+          // publishers_.at(protocol).publish(msg_data);
+          publishers_->publish(msg_data);
         });
   }
 
   void Init::initNodeFrame0(NProtocolExtracter *protocol_extraction)
   {
     auto protocol = new NLT_ProtocolNodeFrame0;
+    auto topic = "nlink_linktrack_nodeframe0";
+    static auto publishers_  = nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe0>(topic, 200);
+    TopicAdvertisedTip(topic, nh_);
     protocol_extraction->AddProtocol(protocol);
     protocol->SetHandleDataCallback(
         [=]
         {
-          if (!publishers_[protocol])
-          {
-            auto topic = "nlink_linktrack_nodeframe0";
-            publishers_[protocol] =
-                nh_.advertise<nlink_parser::LinktrackNodeframe0>(topic, 200);
-            TopicAdvertisedTip(topic);
-            ;
-          }
+          // if (!publishers_[protocol])
+          // {
+          //   auto topic = "nlink_linktrack_nodeframe0";
+          //   // publishers_[protocol] =
+          //   //     nh_.advertise<nlink_parser::LinktrackNodeframe0>(topic, 200);
+          //   publishers_[protocol] = 
+          //       nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe0>(topic, 200);
+          //   TopicAdvertisedTip(topic);
+          //   ;
+          // }
           const auto &data = g_nlt_nodeframe0.result;
           auto &msg_data = g_msg_nodeframe0;
           auto &msg_nodes = msg_data.nodes;
@@ -167,24 +193,31 @@ namespace linktrack
             memcpy(msg_node.data.data(), node->data, node->data_length);
           }
 
-          publishers_.at(protocol).publish(msg_data);
+          // publishers_.at(protocol).publish(msg_data);
+          publishers_->publish(msg_data);
         });
   }
 
   void Init::initNodeFrame1(NProtocolExtracter *protocol_extraction)
   {
     auto protocol = new NLT_ProtocolNodeFrame1;
+    auto topic = "nlink_linktrack_nodeframe1";
+    static auto publishers_ = 
+                nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe1>(topic, 200);
+    TopicAdvertisedTip(topic, nh_);
     protocol_extraction->AddProtocol(protocol);
     protocol->SetHandleDataCallback(
         [=]
         {
-          if (!publishers_[protocol])
-          {
-            auto topic = "nlink_linktrack_nodeframe1";
-            publishers_[protocol] =
-                nh_.advertise<nlink_parser::LinktrackNodeframe1>(topic, 200);
-            TopicAdvertisedTip(topic);
-          }
+          // if (!publishers_[protocol])
+          // {
+          //   auto topic = "nlink_linktrack_nodeframe1";
+          //   // publishers_[protocol] =
+          //   //     nh_.advertise<nlink_parser::LinktrackNodeframe1>(topic, 200);
+          //   publishers_[protocol] = 
+          //       nh_->creater_publisher<nlink_parser::msg::LinktrackNodeframe1>(topic, 200);
+          //   TopicAdvertisedTip(topic, nh_);
+          // }
           const auto &data = g_nlt_nodeframe1.result;
           auto &msg_data = g_msg_nodeframe1;
           auto &msg_nodes = msg_data.nodes;
@@ -205,7 +238,8 @@ namespace linktrack
             ARRAY_ASSIGN(msg_node.pos_3d, node->pos_3d)
           }
 
-          publishers_.at(protocol).publish(msg_data);
+          // publishers_.at(protocol).publish(msg_data);
+          publishers_->publish(msg_data);
         });
   }
 
@@ -213,16 +247,21 @@ namespace linktrack
   {
     auto protocol = new NLT_ProtocolNodeFrame2;
     protocol_extraction->AddProtocol(protocol);
+    auto topic = "nlink_linktrack_nodeframe2";
+    auto publishers_ = nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe2>(topic, 200);
+    TopicAdvertisedTip(topic, nh_);
     protocol->SetHandleDataCallback(
         [=]
         {
-          if (!publishers_[protocol])
-          {
-            auto topic = "nlink_linktrack_nodeframe2";
-            publishers_[protocol] =
-                nh_.advertise<nlink_parser::LinktrackNodeframe2>(topic, 200);
-            TopicAdvertisedTip(topic);
-          }
+          // if (!publishers_[protocol])
+          // {
+          //   auto topic = "nlink_linktrack_nodeframe2";
+          //   // publishers_[protocol] =
+          //   //     nh_.advertise<nlink_parser::LinktrackNodeframe2>(topic, 200);
+          //   publishers_[protocol] = 
+          //       nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe2>(topic, 200);
+          //   TopicAdvertisedTip(topic);
+          // }
           const auto &data = g_nlt_nodeframe2.result;
           auto &msg_data = g_msg_nodeframe2;
           auto &msg_nodes = msg_data.nodes;
@@ -251,25 +290,31 @@ namespace linktrack
             msg_node.fp_rssi = node->fp_rssi;
             msg_node.rx_rssi = node->rx_rssi;
           }
-
-          publishers_.at(protocol).publish(msg_data);
+          publishers_->publish(msg_data);
+          // publishers_.at(protocol).publish(msg_data);
         });
   }
 
   void Init::initNodeFrame3(NProtocolExtracter *protocol_extraction)
   {
     auto protocol = new NLT_ProtocolNodeFrame3;
+    auto topic = "nlink_linktrack_nodeframe3";
+    static auto publishers_ = 
+                nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe3>(topic, 200);
+    TopicAdvertisedTip(topic, nh_);
     protocol_extraction->AddProtocol(protocol);
     protocol->SetHandleDataCallback(
         [=]
         {
-          if (!publishers_[protocol])
-          {
-            auto topic = "nlink_linktrack_nodeframe3";
-            publishers_[protocol] =
-                nh_.advertise<nlink_parser::LinktrackNodeframe3>(topic, 200);
-            TopicAdvertisedTip(topic);
-          }
+          // if (!publishers_[protocol])
+          // {
+          //   auto topic = "nlink_linktrack_nodeframe3";
+          //   // publishers_[protocol] =
+          //   //     nh_.advertise<nlink_parser::LinktrackNodeframe3>(topic, 200);
+          //   publishers_[protocol] = 
+          //       nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe3>(topic, 200);
+          //   TopicAdvertisedTip(topic);
+          // }
           const auto &data = g_nlt_nodeframe3.result;
           auto &msg_data = g_msg_nodeframe3;
           auto &msg_nodes = msg_data.nodes;
@@ -292,24 +337,31 @@ namespace linktrack
             msg_node.rx_rssi = node->rx_rssi;
           }
 
-          publishers_.at(protocol).publish(msg_data);
+          // publishers_.at(protocol).publish(msg_data);
+          publishers_->publish(msg_data);
         });
   }
 
   void Init::initNodeFrame4(NProtocolExtracter *protocol_extraction)
   {
     auto protocol = new NLT_ProtocolNodeFrame4;
+    auto topic = "nlink_linktrack_nodeframe4";
+    static auto publishers_ = 
+                nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe4>(topic, 200);
+    TopicAdvertisedTip(topic, nh_);
     protocol_extraction->AddProtocol(protocol);
     protocol->SetHandleDataCallback(
         [=]
         {
-          if (!publishers_[protocol])
-          {
-            auto topic = "nlink_linktrack_nodeframe4";
-            publishers_[protocol] =
-                nh_.advertise<nlink_parser::LinktrackNodeframe4>(topic, 200);
-            TopicAdvertisedTip(topic);
-          }
+          // if (!publishers_[protocol])
+          // {
+          //   auto topic = "nlink_linktrack_nodeframe4";
+          //   // publishers_[protocol] =
+          //   //     nh_.advertise<nlink_parser::LinktrackNodeframe4>(topic, 200);
+          //   publishers_[protocol] = 
+          //       nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe4>(topic, 200);
+          //   TopicAdvertisedTip(topic);
+          // }
           const auto &data = g_nlt_nodeframe4.result;
           auto &msg_data = g_msg_nodeframe4;
           msg_data.role = data.role;
@@ -334,24 +386,31 @@ namespace linktrack
             }
           }
 
-          publishers_.at(protocol).publish(msg_data);
+          // publishers_.at(protocol).publish(msg_data);
+          publishers_->publish(msg_data);
         });
   }
 
   void Init::initNodeFrame5(NProtocolExtracter *protocol_extraction)
   {
     auto protocol = new NLT_ProtocolNodeFrame5;
+    auto topic = "nlink_linktrack_nodeframe5";
+    static auto publishers_ = 
+                nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe5>(topic, 200);
+    TopicAdvertisedTip(topic, nh_);
     protocol_extraction->AddProtocol(protocol);
     protocol->SetHandleDataCallback(
         [=]
         {
-          if (!publishers_[protocol])
-          {
-            auto topic = "nlink_linktrack_nodeframe5";
-            publishers_[protocol] =
-                nh_.advertise<nlink_parser::LinktrackNodeframe5>(topic, 200);
-            TopicAdvertisedTip(topic);
-          }
+          // if (!publishers_[protocol])
+          // {
+          //   auto topic = "nlink_linktrack_nodeframe5";
+          //   // publishers_[protocol] =
+          //   //     nh_.advertise<nlink_parser::LinktrackNodeframe5>(topic, 200);
+          //   publishers_[protocol] = 
+          //       nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe5>(topic, 200);
+          //   TopicAdvertisedTip(topic);
+          // }
           const auto &data = g_nlt_nodeframe5.result;
           auto &msg_data = g_msg_nodeframe5;
           auto &msg_nodes = msg_data.nodes;
@@ -374,25 +433,32 @@ namespace linktrack
             msg_node.rx_rssi = node->rx_rssi;
           }
 
-          publishers_.at(protocol).publish(msg_data);
+          // publishers_.at(protocol).publish(msg_data);
+          publishers_->publish(msg_data);
         });
   }
 
   void Init::initNodeFrame6(NProtocolExtracter *protocol_extraction)
   {
     auto protocol = new NLT_ProtocolNodeFrame6;
+    auto topic = "nlink_linktrack_nodeframe6";
+    static auto publishers_ = 
+                nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe6>(topic, 200);
+    TopicAdvertisedTip(topic, nh_);
     protocol_extraction->AddProtocol(protocol);
     protocol->SetHandleDataCallback(
         [=]
         {
-          if (!publishers_[protocol])
-          {
-            auto topic = "nlink_linktrack_nodeframe6";
-            publishers_[protocol] =
-                nh_.advertise<nlink_parser::LinktrackNodeframe6>(topic, 200);
-            TopicAdvertisedTip(topic);
-            ;
-          }
+          // if (!publishers_[protocol])
+          // {
+          //   auto topic = "nlink_linktrack_nodeframe6";
+          //   // publishers_[protocol] =
+          //   //     nh_.advertise<nlink_parser::LinktrackNodeframe6>(topic, 200);
+          //   publishers_[protocol] = 
+          //       nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe6>(topic, 200);
+          //   TopicAdvertisedTip(topic);
+          //   ;
+          // }
           const auto &data = g_nlt_nodeframe6.result;
           auto &msg_data = g_msg_nodeframe6;
           auto &msg_nodes = msg_data.nodes;
@@ -411,7 +477,8 @@ namespace linktrack
             memcpy(msg_node.data.data(), node->data, node->data_length);
           }
 
-          publishers_.at(protocol).publish(msg_data);
+          // publishers_.at(protocol).publish(msg_data);
+          publishers_->publish(msg_data);
         });
   }
 

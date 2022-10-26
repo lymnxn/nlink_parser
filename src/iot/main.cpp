@@ -1,4 +1,5 @@
-#include <ros/ros.h>
+// #include <ros/ros.h>
+#include "rclcpp/rclcpp.hpp"
 
 #include "init.h"
 #include "init_serial.h"
@@ -8,15 +9,18 @@
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "iot_parser");
-  ros::NodeHandle nh;
+  // ros::init(argc, argv, "iot_parser");
+  // ros::NodeHandle nh;
+  rclcpp::init(argc, argv);
+  auto node = rclcpp::Node::make_shared("iot_parser");
   serial::Serial serial;
-  initSerial(&serial);
+  initSerial(&serial, node);
 
   NProtocolExtracter extracter;
-  iot::Init init(&extracter);
+  iot::Init init(&extracter, node);
 
-  while (ros::ok())
+  // while (ros::ok())
+  while(rclcpp::ok())
   {
     auto available_bytes = serial.available();
     std::string str_received;
@@ -29,7 +33,8 @@ int main(int argc, char **argv)
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    ros::spinOnce();
+    // ros::spinOnce();
+    rclcpp::spin_some(node);
   }
   return EXIT_SUCCESS;
 }

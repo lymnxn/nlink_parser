@@ -34,28 +34,32 @@ namespace
 
 namespace tofsensem
 {
-  nlink_parser::TofsenseMFrame0 g_msg_tofmframe0;
-
-  Init::Init(NProtocolExtracter *protocol_extraction)
+  // nlink_parser::TofsenseMFrame0 g_msg_tofmframe0;
+  nlink_parser::msg::TofsenseMFrame0 g_msg_tofmframe0;
+  Init::Init(NProtocolExtracter *protocol_extraction, rclcpp::Node::SharedPtr nh)
   {
     InitFrame0(protocol_extraction);
+    nh_ = nh;
   }
 
   void Init::InitFrame0(NProtocolExtracter *protocol_extraction)
   {
     static auto protocol = new ProtocolFrame0;
+    auto topic = "nlink_tofsensem_frame0";
+    static auto publishers_ = nh_->create_publisher<nlink_parser::msg::TofsenseMFrame0>(topic, 50);
+    TopicAdvertisedTip(topic, nh_);
     protocol_extraction->AddProtocol(protocol);
     protocol->SetHandleDataCallback(
         [=]
         {
-          if (!publishers_[protocol])
-          {
-            ros::NodeHandle nh_;
-            auto topic = "nlink_tofsensem_frame0";
-            publishers_[protocol] =
-                nh_.advertise<nlink_parser::TofsenseMFrame0>(topic, 50);
-            TopicAdvertisedTip(topic);
-          }
+          // if (!publishers_[protocol])
+          // {
+          //   ros::NodeHandle nh_;
+          //   auto topic = "nlink_tofsensem_frame0";
+          //   publishers_[protocol] =
+          //       nh_.advertise<nlink_parser::TofsenseMFrame0>(topic, 50);
+          //   TopicAdvertisedTip(topic);
+          // }
 
           const auto &data = g_ntsm_frame0;
           g_msg_tofmframe0.id = data.id;
@@ -69,7 +73,8 @@ namespace tofsensem
             pixel.dis_status = src_pixel.dis_status;
             pixel.signal_strength = src_pixel.signal_strength;
           }
-          publishers_.at(protocol).publish(g_msg_tofmframe0);
+          // publishers_.at(protocol).publish(g_msg_tofmframe0);
+          publishers_->publish(g_msg_tofmframe0);
         });
   }
 

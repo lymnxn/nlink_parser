@@ -1,4 +1,5 @@
-#include <ros/ros.h>
+// #include <ros/ros.h>
+#include "rclcpp/rclcpp.hpp"
 
 #include "init.h"
 #include "init_serial.h"
@@ -6,15 +7,18 @@
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "tofsense_parser");
-  ros::NodeHandle nh;
+  // ros::init(argc, argv, "tofsense_parser");
+  // ros::NodeHandle nh;
+  rclcpp::init(argc, argv);
+  rclcpp::Node::SharedPtr nh = rclcpp::Node::make_shared("tofsense_parser");
   serial::Serial serial;
-  initSerial(&serial);
+  initSerial(&serial, nh);
 
   NProtocolExtracter extracter;
-  tofsense::Init init(&extracter, &serial);
+  tofsense::Init init(&extracter, &serial, nh);
 
-  while (ros::ok())
+  // while (ros::ok())
+  while (rclcpp::ok())
   {
     auto available_bytes = serial.available();
     std::string str_received;
@@ -23,7 +27,8 @@ int main(int argc, char **argv)
       serial.read(str_received, available_bytes);
       extracter.AddNewData(str_received);
     }
-    ros::spinOnce();
+    // ros::spinOnce();
+    rclcpp::spin_some(nh);
   }
   return EXIT_SUCCESS;
 }
