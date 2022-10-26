@@ -1,48 +1,80 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(nlink_parser)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-#add_compile_options(-std=c++11)
-add_definitions(-std=c++11)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+# Default to Release build
+if(NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+endif()
+message( STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}" )
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-    roscpp
-    std_msgs
-    message_generation
-    )
+find_package(ament_cmake REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+
+set(MSGS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/msg")
+file(GLOB NLINK_MSGS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${MSGS_DIR}/*.msg")
+
+file(GLOB ROS_MSG_DIR_LIST "${MSGS_DIR}/*.msg")
+
+set(ROS_MSG_DIR_LIST "${ROS_MSG_DIR_LIST}" CACHE INTERNAL "ROS_MSG_DIR_LIST")
+# message(${NLINK_MSGS})
+
+if(NOT "${NLINK_MSGS}" STREQUAL "")
+  # Generate introspection typesupport for C and C++ and IDL files
+  rosidl_generate_interfaces(${PROJECT_NAME}
+                             ${NLINK_MSGS}
+                             DEPENDENCIES
+                             std_msgs
+                             builtin_interfaces
+                             ADD_LINTER_TESTS)
+else()
+  message(FATAL_ERROR "No Nlink msgs found to generate interfaces to!")
+endif()
+
+# find_package(catkin REQUIRED COMPONENTS
+#     roscpp
+#     std_msgs
+#     message_generation
+#     )
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-    FILES
-    LinktrackAnchorframe0.msg
-    LinktrackNode0.msg
-    LinktrackNode1.msg
-    LinktrackNode2.msg
-    LinktrackNodeframe0.msg
-    LinktrackNodeframe1.msg
-    LinktrackNodeframe2.msg
-    LinktrackNodeframe3.msg
-    LinktrackTag.msg
-    LinktrackTagframe0.msg
-    TofsenseCascade.msg
-    TofsenseFrame0.msg
-    LinktrackAoaNode0.msg
-    LinktrackAoaNodeframe0.msg
-    LinktrackNode4Anchor.msg
-    LinktrackNode4Tag.msg
-    LinktrackNodeframe4.msg
-    LinktrackNode5.msg
-    LinktrackNodeframe5.msg
-    LinktrackNode6.msg
-    LinktrackNodeframe6.msg
-    TofsenseMFrame0.msg
-    TofsenseMFrame0Pixel.msg
-    IotFrame0.msg
-    IotFrame0Node.msg
-    )
+# add_message_files(
+#     FILES
+#     LinktrackAnchorframe0.msg
+#     LinktrackNode0.msg
+#     LinktrackNode1.msg
+#     LinktrackNode2.msg
+#     LinktrackNodeframe0.msg
+#     LinktrackNodeframe1.msg
+#     LinktrackNodeframe2.msg
+#     LinktrackNodeframe3.msg
+#     LinktrackTag.msg
+#     LinktrackTagframe0.msg
+#     TofsenseCascade.msg
+#     TofsenseFrame0.msg
+#     LinktrackAoaNode0.msg
+#     LinktrackAoaNodeframe0.msg
+#     LinktrackNode4Anchor.msg
+#     LinktrackNode4Tag.msg
+#     LinktrackNodeframe4.msg
+#     LinktrackNode5.msg
+#     LinktrackNodeframe5.msg
+#     LinktrackNode6.msg
+#     LinktrackNodeframe6.msg
+#     TofsenseMFrame0.msg
+#     TofsenseMFrame0Pixel.msg
+#     IotFrame0.msg
+#     IotFrame0Node.msg
+#     )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -59,17 +91,17 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-    DEPENDENCIES
-    std_msgs
-    )
+# generate_messages(
+#     DEPENDENCIES
+#     std_msgs
+#     )
 
-catkin_package(
+# catkin_package(
     #  INCLUDE_DIRS include
     #  LIBRARIES nlink
-    CATKIN_DEPENDS message_runtime
+    # CATKIN_DEPENDS message_runtime
     #  DEPENDS system_lib
-    )
+    # )
 
 ###########
 ## Build ##
@@ -79,7 +111,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
     include
-    ${catkin_INCLUDE_DIRS}
+    # ${catkin_INCLUDE_DIRS}
     src/utils
     )
 
@@ -105,10 +137,11 @@ add_library(${nutils}
     src/utils/nlink_protocol.cpp
     src/utils/nutils.cpp
 )
-target_link_libraries(${nutils}
-  ${catkin_LIBRARIES}
-  serial
-)
+# target_link_libraries(${nutils}
+#   ${catkin_LIBRARIES}
+#   serial
+# )
+target_link_libraries(${nutils} rclcpp serial)
 
 set(LINKTRACK_NAME "linktrack")
 add_executable(${LINKTRACK_NAME}
@@ -116,11 +149,12 @@ add_executable(${LINKTRACK_NAME}
     src/linktrack/main.cpp
     src/linktrack/protocols.cpp
     )
-target_link_libraries(${LINKTRACK_NAME}
-#    ${catkin_LIBRARIES}
-    ${nutils}
-    )
-add_dependencies(${LINKTRACK_NAME} ${PROJECT_NAME}_generate_messages_cpp)
+# target_link_libraries(${LINKTRACK_NAME}
+# #    ${catkin_LIBRARIES}
+#     ${nutils}
+#     )
+# add_dependencies(${LINKTRACK_NAME} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(${LINKTRACK_NAME} rclcpp ${nutils})
 
 set(LINKTRACK_RVIZ_NAME "linktrack_rviz_converter")
 add_executable(${LINKTRACK_RVIZ_NAME}
@@ -129,28 +163,29 @@ add_executable(${LINKTRACK_RVIZ_NAME}
 target_link_libraries(${LINKTRACK_RVIZ_NAME}
     ${nutils}
     )
-add_dependencies(${LINKTRACK_RVIZ_NAME} ${PROJECT_NAME}_generate_messages_cpp)
 
 set(TOFSENSE_NAME "tofsense")
 add_executable(${TOFSENSE_NAME}
     src/tofsense/init.cpp
     src/tofsense/main.cpp
     )
-target_link_libraries(${TOFSENSE_NAME}
-#    ${catkin_LIBRARIES}
-    ${nutils}
-    )
-add_dependencies(${TOFSENSE_NAME} ${PROJECT_NAME}_generate_messages_cpp)
+# target_link_libraries(${TOFSENSE_NAME}
+# #    ${catkin_LIBRARIES}
+#     ${nutils}
+#     )
+# add_dependencies(${TOFSENSE_NAME} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(${TOFSENSE_NAME} rclcpp ${nutils})
 
 set(EXE_NAME "tofsensem")
 add_executable(${EXE_NAME}
     src/tofsensem/init.cpp
     src/tofsensem/main.cpp
     )
-target_link_libraries(${EXE_NAME}
-    ${nutils}
-    )
-add_dependencies(${EXE_NAME} ${PROJECT_NAME}_generate_messages_cpp)
+# target_link_libraries(${EXE_NAME}
+#     ${nutils}
+#     )
+# add_dependencies(${EXE_NAME} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(${EXE_NAME} rclcpp ${nutils})
 
 set(EXE_NAME "linktrack_aoa")
 add_executable(${EXE_NAME}
@@ -158,11 +193,11 @@ add_executable(${EXE_NAME}
     src/linktrack_aoa/main.cpp
     src/linktrack/protocols.cpp
     )
-target_link_libraries(${EXE_NAME}
-#    ${catkin_LIBRARIES}
-    ${nutils}
-    )
-add_dependencies(${EXE_NAME} ${PROJECT_NAME}_generate_messages_cpp)
+# target_link_libraries(${EXE_NAME}
+# #    ${catkin_LIBRARIES}
+#     ${nutils}
+#     )
+target_link_libraries(${EXE_NAME} rclcpp ${nutils})
 
 set(EXE_NAME "iot")
 add_executable(${EXE_NAME}
@@ -172,17 +207,28 @@ add_executable(${EXE_NAME}
 target_link_libraries(${EXE_NAME}
     ${nutils}
     )
-add_dependencies(${EXE_NAME} ${PROJECT_NAME}_generate_messages_cpp)
-
 
 #############
 ## Testing ##
 #############
-if(${CATKIN_ENABLE_TESTING})
-    find_package(rostest REQUIRED)
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-    ## Add gtest based cpp test target and link libraries
-    catkin_add_gtest(${PROJECT_NAME}_test
+# if(${CATKIN_ENABLE_TESTING})
+#     find_package(rostest REQUIRED)
+# #    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+#     ## Add gtest based cpp test target and link libraries
+#     catkin_add_gtest(${PROJECT_NAME}_test
+#         src/linktrack/init.cpp
+#         src/linktrack/protocols.cpp
+#         src/tofsense/init.cpp
+#         src/linktrack_aoa/init.cpp
+#         test/test_nlink_parser.cpp
+#         src/tofsensem/init.cpp
+#         src/iot/init.cpp
+#         )
+# endif()
+
+if (BUILD_TESTING)
+    find_package(ament_cmake_gtest REQUIRED)
+    ament_add_gtest(${PROJECT_NAME}_test
         src/linktrack/init.cpp
         src/linktrack/protocols.cpp
         src/tofsense/init.cpp
@@ -190,9 +236,11 @@ if(${CATKIN_ENABLE_TESTING})
         test/test_nlink_parser.cpp
         src/tofsensem/init.cpp
         src/iot/init.cpp
-        )
+    )
 endif()
 
 if(TARGET ${PROJECT_NAME}_test)
     target_link_libraries(${PROJECT_NAME}_test  ${nutils})
 endif()
+
+ament_package()

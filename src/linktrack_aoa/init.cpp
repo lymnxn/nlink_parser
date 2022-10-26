@@ -1,11 +1,14 @@
 #include "init.h"
 
-#include <std_msgs/String.h>
+// #include <std_msgs/String.h>
+#include "std_msgs/msg/string.hpp"
 
 #include "../linktrack/protocols.h"
 #include "nlink_protocol.h"
-#include "nlink_unpack/nlink_linktrack_aoa_nodeframe0.h"
-#include "nlink_unpack/nlink_linktrack_nodeframe0.h"
+// #include "nlink_unpack/nlink_linktrack_aoa_nodeframe0.h"
+// #include "nlink_unpack/nlink_linktrack_nodeframe0.h"
+#include "nlink_unpack/msg/nlink_linktrack_aoa_nodeframe0.h"
+#include "nlink_unpack/msg/nlink_linktrack_nodeframe0.h"
 #include "nutils.h"
 
 class NLTAoa_ProtocolNodeFrame0 : public NLinkProtocolVLength
@@ -53,8 +56,9 @@ namespace linktrack_aoa
 
   void Init::initDataTransmission()
   {
-    dt_sub_ =
-        nh_.subscribe("nlink_linktrack_data_transmission", 1000, DTCallback);
+    // dt_sub_ =
+    //     nh_.subscribe("nlink_linktrack_data_transmission", 1000, DTCallback);
+    dt_sub_ = nh_->create_subscribe<std_msgs::msg::String>("nlink_linktrack_data_transmission", 1000, DTCallback);
   }
 
   void Init::initNodeFrame0(NProtocolExtracter *protocol_extraction)
@@ -65,8 +69,10 @@ namespace linktrack_aoa
       if (!publishers_[protocol])
       {
         auto topic = "nlink_linktrack_nodeframe0";
-        publishers_[protocol] =
-            nh_.advertise<nlink_parser::LinktrackNodeframe0>(topic, 200);
+        // publishers_[protocol] =
+        //     nh_.advertise<nlink_parser::LinktrackNodeframe0>(topic, 200);
+        publishers_[protocol] = 
+            nh_->create_publisher<nlink_parser::msg::LinktrackNodeframe0>(topic, 200);
         TopicAdvertisedTip(topic);
         ;
       }
@@ -100,8 +106,10 @@ namespace linktrack_aoa
       if (!publishers_[protocol])
       {
         auto topic = "nlink_linktrack_aoa_nodeframe0";
+        // publishers_[protocol] =
+        //     nh_.advertise<nlink_parser::LinktrackAoaNodeframe0>(topic, 200);
         publishers_[protocol] =
-            nh_.advertise<nlink_parser::LinktrackAoaNodeframe0>(topic, 200);
+            nh_->create_publisher<nlink_parser::msg::LinktrackAoaNodeframe0>(topic, 200);
         TopicAdvertisedTip(topic);
       }
       const auto &data = g_nltaoa_nodeframe0.result;
