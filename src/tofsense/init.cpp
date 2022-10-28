@@ -47,7 +47,7 @@ namespace tofsense
     nh_ = nh;
     if(!nh_->get_parameter<bool>("~inquire_mode", is_inquire_mode_))
     {
-      RCLCPP_ERROR(nh_->get_logger(), "No inquire_mode");
+      RCLCPP_INFO(nh_->get_logger(), "No inquire_mode");
       is_inquire_mode_ = false;
     }
     InitFrame0(protocol_extraction);

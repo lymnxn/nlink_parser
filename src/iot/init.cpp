@@ -32,8 +32,8 @@ namespace iot
 
   Init::Init(NProtocolExtracter *protocol_extraction, rclcpp::Node::SharedPtr node)
   {
-    InitFrame0(protocol_extraction);
     nh_ = node;
+    InitFrame0(protocol_extraction);
   }
 
   void Init::InitFrame0(NProtocolExtracter *protocol_extraction)
@@ -46,7 +46,6 @@ namespace iot
     protocol->SetHandleDataCallback(
         [=]
         {
-
           const auto &data = g_iot_frame0;
           g_msg_iotframe0.uid = data.uid;
           g_msg_iotframe0.nodes.resize(IOT_FRAME0_NODE_COUNT);

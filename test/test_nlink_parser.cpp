@@ -362,7 +362,6 @@ TEST(NLinkParser, linktrack)
 
 namespace tofsense
 {
-  // extern nlink_parser::TofsenseFrame0 g_msg_frame0;
   extern nlink_parser::msg::TofsenseFrame0 g_msg_frame0;
 }
 
@@ -388,7 +387,6 @@ TEST(NLinkParser, tofsense)
 
 namespace tofsensem
 {
-  // extern nlink_parser::TofsenseMFrame0 g_msg_tofmframe0;
   extern nlink_parser::msg::TofsenseMFrame0 g_msg_tofmframe0;
 }
 
