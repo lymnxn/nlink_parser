@@ -14,9 +14,7 @@ namespace
     ProtocolFrame0()
         : NLinkProtocolVLength(
               true, g_ntsm_frame0.fixed_part_size,
-              {g_ntsm_frame0.frame_header, g_ntsm_frame0.function_mark})
-    {
-    }
+              {g_ntsm_frame0.frame_header, g_ntsm_frame0.function_mark}){}
 
   protected:
     bool UpdateLength(const uint8_t *data, size_t available_bytes) override
@@ -34,12 +32,11 @@ namespace
 
 namespace tofsensem
 {
-  // nlink_parser::TofsenseMFrame0 g_msg_tofmframe0;
   nlink_parser::msg::TofsenseMFrame0 g_msg_tofmframe0;
   Init::Init(NProtocolExtracter *protocol_extraction, rclcpp::Node::SharedPtr nh)
   {
-    InitFrame0(protocol_extraction);
     nh_ = nh;
+    InitFrame0(protocol_extraction);
   }
 
   void Init::InitFrame0(NProtocolExtracter *protocol_extraction)
@@ -52,15 +49,6 @@ namespace tofsensem
     protocol->SetHandleDataCallback(
         [=]
         {
-          // if (!publishers_[protocol])
-          // {
-          //   ros::NodeHandle nh_;
-          //   auto topic = "nlink_tofsensem_frame0";
-          //   publishers_[protocol] =
-          //       nh_.advertise<nlink_parser::TofsenseMFrame0>(topic, 50);
-          //   TopicAdvertisedTip(topic);
-          // }
-
           const auto &data = g_ntsm_frame0;
           g_msg_tofmframe0.id = data.id;
           g_msg_tofmframe0.system_time = data.system_time;
@@ -73,7 +61,6 @@ namespace tofsensem
             pixel.dis_status = src_pixel.dis_status;
             pixel.signal_strength = src_pixel.signal_strength;
           }
-          // publishers_.at(protocol).publish(g_msg_tofmframe0);
           publishers_->publish(g_msg_tofmframe0);
         });
   }

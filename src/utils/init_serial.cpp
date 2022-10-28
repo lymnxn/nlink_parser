@@ -23,9 +23,6 @@ void initSerial(serial::Serial *serial, rclcpp::Node::ConstSharedPtr node)
 {
   try
   {
-    // auto port_name = 
-    //     ros::param::param<std::string>("~port_name", "/dev/ttyUSB0");
-    // auto baud_rate = ros::param::param<int>("~baud_rate", 921600);
     std::string port_name("/dev/ttyUSB0");
     if(node->get_parameter<std::string>("~port_name", port_name))
     {

@@ -1,4 +1,3 @@
-// #include <ros/ros.h>
 #include "rclcpp/rclcpp.hpp"
 
 #include "init.h"
@@ -24,17 +23,13 @@ void printHexData(const std::string &data)
 
 int main(int argc, char **argv)
 {
-  // ros::init(argc, argv, "linktrack_parser");
-  // ros::NodeHandle nh;
   rclcpp::init(argc, argv);
   auto node = rclcpp::Node::make_shared("linktrack_parser");
   serial::Serial serial;
   initSerial(&serial, node);
   NProtocolExtracter protocol_extraction;
   linktrack::Init init(&protocol_extraction, &serial, node);
-  // ros::Rate loop_rate(1000);
   rclcpp::Rate loop_rate(1000);
-  // while (ros::ok())
   while (rclcpp::ok())
   {
     auto available_bytes = serial.available();
@@ -45,8 +40,6 @@ int main(int argc, char **argv)
       //printHexData(str_received);
       protocol_extraction.AddNewData(str_received);
     }
-    // ros::spinOnce();
-    // loop_rate.sleep();
     rclcpp::spin_some(node);
     loop_rate.sleep();
   }

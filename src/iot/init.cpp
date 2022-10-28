@@ -1,4 +1,3 @@
-
 #include "init.h"
 
 #include "nlink_protocol.h"
@@ -29,7 +28,6 @@ namespace
 
 namespace iot
 {
-  // nlink_parser::IotFrame0 g_msg_iotframe0;
   nlink_parser::msg::IotFrame0 g_msg_iotframe0;
 
   Init::Init(NProtocolExtracter *protocol_extraction, rclcpp::Node::SharedPtr node)
@@ -48,14 +46,6 @@ namespace iot
     protocol->SetHandleDataCallback(
         [=]
         {
-          // if (!publishers_[protocol])
-          // {
-          //   ros::NodeHandle nh_;
-          //   auto topic = "nlink_iot_frame0";
-          //   publishers_[protocol] =
-          //       nh_.advertise<nlink_parser::IotFrame0>(topic, 50);
-          //   TopicAdvertisedTip(topic);
-          // }
 
           const auto &data = g_iot_frame0;
           g_msg_iotframe0.uid = data.uid;
@@ -71,7 +61,6 @@ namespace iot
                 data.nodes[i].aoa_angle_vertical;
           }
 
-          // publishers_.at(protocol).publish(g_msg_iotframe0);
           publishers_->publish(g_msg_iotframe0);
         });
   }

@@ -7,8 +7,6 @@
 
 int main(int argc, char **argv)
 {
-  // ros::init(argc, argv, "tofsense_parser");
-  // ros::NodeHandle nh;
   rclcpp::init(argc, argv);
   rclcpp::Node::SharedPtr nh = rclcpp::Node::make_shared("tofsense_parser");
   serial::Serial serial;
@@ -17,7 +15,6 @@ int main(int argc, char **argv)
   NProtocolExtracter extracter;
   tofsense::Init init(&extracter, &serial, nh);
 
-  // while (ros::ok())
   while (rclcpp::ok())
   {
     auto available_bytes = serial.available();
@@ -27,7 +24,6 @@ int main(int argc, char **argv)
       serial.read(str_received, available_bytes);
       extracter.AddNewData(str_received);
     }
-    // ros::spinOnce();
     rclcpp::spin_some(nh);
   }
   return EXIT_SUCCESS;

@@ -5,12 +5,9 @@
 
 void TopicAdvertisedTip(const char *topic, rclcpp::Node::ConstSharedPtr node)
 {
-  // ROS_INFO("%s has been advertised,use 'rostopic "
-  //          "echo /%s' to view the data",
-  //          topic, topic);
   RCLCPP_INFO(
       node->get_logger(),
-      "%s has been advertised,use 'rostopic "
+      "node name %s: %s has been advertised,use 'ros2 topic "
       "echo /%s' to view the data",
-      topic, topic);
+      node->get_name(), topic, topic);
 }

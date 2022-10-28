@@ -1,4 +1,3 @@
-// #include <ros/ros.h>
 #include "rclcpp/rclcpp.hpp"
 
 #include "init.h"
@@ -6,15 +5,12 @@
 
 int main(int argc, char **argv)
 {
-  // ros::init(argc, argv, "linktrack_aoa");
-  // ros::NodeHandle nh;
   rclcpp::init(argc, argv);
   auto node = rclcpp::Node::make_shared("linktrack_aoa");
   serial::Serial serial;
   initSerial(&serial, node);
   NProtocolExtracter protocol_extraction;
   linktrack_aoa::Init aoaInit(&protocol_extraction, &serial, node);
-  // ros::Rate loop_rate(1000);
   rclcpp::Rate loop_rate(1000);
   while (rclcpp::ok())
   {
@@ -25,7 +21,6 @@ int main(int argc, char **argv)
       serial.read(str_received, available_bytes);
       protocol_extraction.AddNewData(str_received);
     }
-    // ros::spinOnce();
     rclcpp::spin_some(node);
     loop_rate.sleep();
   }
