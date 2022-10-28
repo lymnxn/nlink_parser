@@ -5,19 +5,6 @@
 #include "../src/tofsense/init.h"
 #include "../src/tofsensem/init.h"
 #include <gtest/gtest.h>
-// #include <nlink_parser/IotFrame0.h>
-// #include <nlink_parser/LinktrackAnchorframe0.h>
-// #include <nlink_parser/LinktrackAoaNodeframe0.h>
-// #include <nlink_parser/LinktrackNodeframe0.h>
-// #include <nlink_parser/LinktrackNodeframe1.h>
-// #include <nlink_parser/LinktrackNodeframe2.h>
-// #include <nlink_parser/LinktrackNodeframe3.h>
-// #include <nlink_parser/LinktrackNodeframe4.h>
-// #include <nlink_parser/LinktrackNodeframe5.h>
-// #include <nlink_parser/LinktrackNodeframe6.h>
-// #include <nlink_parser/LinktrackTagframe0.h>
-// #include <nlink_parser/TofsenseFrame0.h>
-// #include <nlink_parser/TofsenseMFrame0.h>
 #include "nlink_parser/msg/iot_frame0.hpp"
 #include "nlink_parser/msg/linktrack_anchorframe0.hpp"
 #include "nlink_parser/msg/linktrack_aoa_nodeframe0.hpp"
@@ -49,15 +36,6 @@ static const double kAbsError = 0.001;
 
 namespace linktrack
 {
-  // extern nlink_parser::LinktrackAnchorframe0 g_msg_anchorframe0;
-  // extern nlink_parser::LinktrackTagframe0 g_msg_tagframe0;
-  // extern nlink_parser::LinktrackNodeframe0 g_msg_nodeframe0;
-  // extern nlink_parser::LinktrackNodeframe1 g_msg_nodeframe1;
-  // extern nlink_parser::LinktrackNodeframe2 g_msg_nodeframe2;
-  // extern nlink_parser::LinktrackNodeframe3 g_msg_nodeframe3;
-  // extern nlink_parser::LinktrackNodeframe4 g_msg_nodeframe4;
-  // extern nlink_parser::LinktrackNodeframe5 g_msg_nodeframe5;
-  // extern nlink_parser::LinktrackNodeframe6 g_msg_nodeframe6;
   extern nlink_parser::msg::LinktrackAnchorframe0 g_msg_anchorframe0;
   extern nlink_parser::msg::LinktrackTagframe0 g_msg_tagframe0;
   extern nlink_parser::msg::LinktrackNodeframe0 g_msg_nodeframe0;
@@ -163,8 +141,8 @@ TEST(NLinkParser, linktrack)
                   kAbsError)
     COMPARE_ARRAY(msgData.nodes[1].dis_arr,
                   ({3.18f, 2.98f, 5.3f, 5.31f, 0, 0, 0, 0}), kAbsError)
-    EXPECT_EQ(msgData.local_time, 33313);
-    EXPECT_EQ(msgData.system_time, 32000);
+    EXPECT_EQ(msgData.local_time, 33313U);
+    EXPECT_EQ(msgData.system_time, 32000U);
     EXPECT_NEAR(msgData.voltage, 4.995f, kAbsError);
   }
   {
@@ -190,8 +168,8 @@ TEST(NLinkParser, linktrack)
     COMPARE_ARRAY(msgData.quaternion,
                   ({-0.656777f, -0.125699f, -0.739489f, 0.0512801f}), 0.00001f)
     COMPARE_ARRAY(msgData.eop_3d, ({0.11f, 0.16f, 2.55f}), 0.01f)
-    EXPECT_EQ(msgData.local_time, 44556);
-    EXPECT_EQ(msgData.system_time, 71627);
+    EXPECT_EQ(msgData.local_time, 44556U);
+    EXPECT_EQ(msgData.system_time, 71627U);
     EXPECT_NEAR(msgData.voltage, 4.948f, kAbsError);
   }
   {
@@ -202,8 +180,8 @@ TEST(NLinkParser, linktrack)
     auto data_length = NLink_StringToHex(string, data);
     protocol_extraction.AddNewData(data, data_length);
     auto &msgData = linktrack::g_msg_nodeframe0;
-    EXPECT_EQ(msgData.nodes[0].data.size(), 9);
-    EXPECT_EQ(msgData.nodes[1].data.size(), 37);
+    EXPECT_EQ(msgData.nodes[0].data.size(), 9U);
+    EXPECT_EQ(msgData.nodes[1].data.size(), 37U);
   }
   {
     auto string =
@@ -219,8 +197,8 @@ TEST(NLinkParser, linktrack)
     COMPARE_ARRAY(msgData.nodes[1].pos_3d, ({2.451f, 2.373f, -0.828f}),
                   kAbsError)
     EXPECT_NEAR(msgData.nodes[1].pos_3d[1], 2.373, 0.001);
-    EXPECT_EQ(msgData.system_time, 33000);
-    EXPECT_EQ(msgData.local_time, 34304);
+    EXPECT_EQ(msgData.system_time, 33000U);
+    EXPECT_EQ(msgData.local_time, 34304U);
     EXPECT_NEAR(msgData.voltage, 4.936f, kAbsError);
   }
   {
@@ -246,21 +224,21 @@ TEST(NLinkParser, linktrack)
     COMPARE_ARRAY(msgData.quaternion,
                   ({0.691282f, 0.694677f, 0.154792f, -0.110552f}), 0.00001f)
     COMPARE_ARRAY(msgData.eop_3d, ({0.06f, 0.09f, 2.55f}), 0.01f)
-    EXPECT_EQ(msgData.local_time, 9157);
-    EXPECT_EQ(msgData.system_time, 1926842);
+    EXPECT_EQ(msgData.local_time, 9157U);
+    EXPECT_EQ(msgData.system_time, 1926842U);
     EXPECT_NEAR(msgData.voltage, 4.973f, kAbsError);
     EXPECT_NEAR(msgData.nodes[0].dis, 3.179f, kAbsError);
     EXPECT_NEAR(msgData.nodes[0].fp_rssi, -88.5f, kAbsError);
     EXPECT_NEAR(msgData.nodes[0].rx_rssi, -79.5f, kAbsError);
     EXPECT_NEAR(msgData.nodes[1].dis, 5.548f, kAbsError);
-    EXPECT_NEAR(msgData.nodes[1].fp_rssi, -90, kAbsError);
+    EXPECT_NEAR(msgData.nodes[1].fp_rssi, -90.0f, kAbsError);
     EXPECT_NEAR(msgData.nodes[1].rx_rssi, -80.5f, kAbsError);
     EXPECT_NEAR(msgData.nodes[2].dis, 6.728f, kAbsError);
-    EXPECT_NEAR(msgData.nodes[2].fp_rssi, -101, kAbsError);
+    EXPECT_NEAR(msgData.nodes[2].fp_rssi, -101 , kAbsError);
     EXPECT_NEAR(msgData.nodes[2].rx_rssi, -79.5f, kAbsError);
     EXPECT_NEAR(msgData.nodes[3].dis, 4.651f, kAbsError);
-    EXPECT_NEAR(msgData.nodes[3].fp_rssi, -99, kAbsError);
-    EXPECT_NEAR(msgData.nodes[3].rx_rssi, -80, kAbsError);
+    EXPECT_NEAR(msgData.nodes[3].fp_rssi, -99.0f, kAbsError);
+    EXPECT_NEAR(msgData.nodes[3].rx_rssi, -80.0f, kAbsError);
   }
   {
     auto string =
@@ -270,21 +248,21 @@ TEST(NLinkParser, linktrack)
     auto data_length = NLink_StringToHex(string, data);
     protocol_extraction.AddNewData(data, data_length);
     auto &msgData = linktrack::g_msg_nodeframe3;
-    EXPECT_EQ(msgData.local_time, 463352);
-    EXPECT_EQ(msgData.system_time, 7262319);
+    EXPECT_EQ(msgData.local_time, 463352U);
+    EXPECT_EQ(msgData.system_time, 7262319U);
     EXPECT_NEAR(msgData.voltage, 4.954f, kAbsError);
     EXPECT_NEAR(msgData.nodes[0].dis, 2.85f, kAbsError);
     EXPECT_NEAR(msgData.nodes[0].fp_rssi, -90.5f, kAbsError);
     EXPECT_NEAR(msgData.nodes[0].rx_rssi, -79.5f, kAbsError);
     EXPECT_NEAR(msgData.nodes[1].dis, 6.051f, kAbsError);
-    EXPECT_NEAR(msgData.nodes[1].fp_rssi, -91, kAbsError);
-    EXPECT_NEAR(msgData.nodes[1].rx_rssi, -80, kAbsError);
+    EXPECT_NEAR(msgData.nodes[1].fp_rssi, -91.0f, kAbsError);
+    EXPECT_NEAR(msgData.nodes[1].rx_rssi, -80.0f, kAbsError);
     EXPECT_NEAR(msgData.nodes[2].dis, 7.304f, kAbsError);
-    EXPECT_NEAR(msgData.nodes[2].fp_rssi, -85, kAbsError);
+    EXPECT_NEAR(msgData.nodes[2].fp_rssi, -85.0f, kAbsError);
     EXPECT_NEAR(msgData.nodes[2].rx_rssi, -79.5f, kAbsError);
     EXPECT_NEAR(msgData.nodes[3].dis, 5.35f, kAbsError);
-    EXPECT_NEAR(msgData.nodes[3].fp_rssi, -92, kAbsError);
-    EXPECT_NEAR(msgData.nodes[3].rx_rssi, -80, kAbsError);
+    EXPECT_NEAR(msgData.nodes[3].fp_rssi, -92.0f, kAbsError);
+    EXPECT_NEAR(msgData.nodes[3].rx_rssi, -80.0f, kAbsError);
   }
   {
     auto string =
@@ -304,14 +282,14 @@ TEST(NLinkParser, linktrack)
     auto data_length = NLink_StringToHex(string, data);
     protocol_extraction.AddNewData(data, data_length);
     auto &msg_data = linktrack::g_msg_nodeframe4;
-    EXPECT_EQ(msg_data.local_time, 106020);
-    EXPECT_EQ(msg_data.system_time, 106020);
+    EXPECT_EQ(msg_data.local_time, 106020U);
+    EXPECT_EQ(msg_data.system_time, 106020U);
     EXPECT_NEAR(msg_data.voltage, 4.44f, kAbsError);
     {
       const auto &tag = msg_data.tags[0];
-      EXPECT_EQ(tag.id, 2);
+      EXPECT_EQ(tag.id, 2U);
       EXPECT_NEAR(tag.voltage, 4.45f, kAbsError);
-      EXPECT_EQ(tag.anchors.size(), 4);
+      EXPECT_EQ(tag.anchors.size(), 4U);
       std::vector<std::pair<uint8_t, float>> datas = {
           {0, 2.422f},
           {1, 1.729f},
@@ -329,7 +307,7 @@ TEST(NLinkParser, linktrack)
       const auto &tag = msg_data.tags[1];
       EXPECT_EQ(tag.id, 5);
       EXPECT_NEAR(tag.voltage, 3.65f, kAbsError);
-      EXPECT_EQ(tag.anchors.size(), 4);
+      EXPECT_EQ(tag.anchors.size(), 4U);
       std::vector<std::pair<uint8_t, float>> datas = {
           {0, 2.701f},
           {1, 1.429f},
@@ -352,21 +330,21 @@ TEST(NLinkParser, linktrack)
     auto data_length = NLink_StringToHex(string, data);
     protocol_extraction.AddNewData(data, data_length);
     auto &msgData = linktrack::g_msg_nodeframe5;
-    EXPECT_EQ(msgData.local_time, 463352);
-    EXPECT_EQ(msgData.system_time, 7262319);
+    EXPECT_EQ(msgData.local_time, 463352U);
+    EXPECT_EQ(msgData.system_time, 7262319U);
     EXPECT_NEAR(msgData.voltage, 4.954f, kAbsError);
     EXPECT_NEAR(msgData.nodes[0].dis, 2.85f, kAbsError);
     EXPECT_NEAR(msgData.nodes[0].fp_rssi, -90.5f, kAbsError);
     EXPECT_NEAR(msgData.nodes[0].rx_rssi, -79.5f, kAbsError);
     EXPECT_NEAR(msgData.nodes[1].dis, 6.051f, kAbsError);
-    EXPECT_NEAR(msgData.nodes[1].fp_rssi, -91, kAbsError);
-    EXPECT_NEAR(msgData.nodes[1].rx_rssi, -80, kAbsError);
+    EXPECT_NEAR(msgData.nodes[1].fp_rssi, -91.0f, kAbsError);
+    EXPECT_NEAR(msgData.nodes[1].rx_rssi, -80.0f, kAbsError);
     EXPECT_NEAR(msgData.nodes[2].dis, 7.304f, kAbsError);
-    EXPECT_NEAR(msgData.nodes[2].fp_rssi, -85, kAbsError);
+    EXPECT_NEAR(msgData.nodes[2].fp_rssi, -85.0f, kAbsError);
     EXPECT_NEAR(msgData.nodes[2].rx_rssi, -79.5f, kAbsError);
     EXPECT_NEAR(msgData.nodes[3].dis, 5.35f, kAbsError);
-    EXPECT_NEAR(msgData.nodes[3].fp_rssi, -92, kAbsError);
-    EXPECT_NEAR(msgData.nodes[3].rx_rssi, -80, kAbsError);
+    EXPECT_NEAR(msgData.nodes[3].fp_rssi, -92.0f, kAbsError);
+    EXPECT_NEAR(msgData.nodes[3].rx_rssi, -80.0f, kAbsError);
   }
 
   {
@@ -377,8 +355,8 @@ TEST(NLinkParser, linktrack)
     auto data_length = NLink_StringToHex(string, data);
     protocol_extraction.AddNewData(data, data_length);
     auto &msgData = linktrack::g_msg_nodeframe6;
-    EXPECT_EQ(msgData.nodes[0].data.size(), 9);
-    EXPECT_EQ(msgData.nodes[1].data.size(), 37);
+    EXPECT_EQ(msgData.nodes[0].data.size(), 9U);
+    EXPECT_EQ(msgData.nodes[1].data.size(), 37U);
   }
 }
 
@@ -401,11 +379,11 @@ TEST(NLinkParser, tofsense)
 
   auto &msg = tofsense::g_msg_frame0;
   EXPECT_EQ(msg.id, 0);
-  EXPECT_EQ(msg.system_time, 17858);
+  EXPECT_EQ(msg.system_time, 17858U);
   EXPECT_NEAR(msg.dis, 0.64, kAbsError);
   EXPECT_EQ(msg.dis_status, 0);
-  EXPECT_EQ(msg.signal_strength, 8);
-  EXPECT_EQ(msg.range_precision, 255);
+  EXPECT_EQ(msg.signal_strength, 8U);
+  EXPECT_EQ(msg.range_precision, 255U);
 }
 
 namespace tofsensem
@@ -543,10 +521,10 @@ TEST(nlink_parser, linktrack_aoa)
 
   EXPECT_EQ(msg.role, LINKTRACK_ROLE_TAG);
   EXPECT_EQ(msg.id, 0);
-  EXPECT_EQ(msg.local_time, 160702);
-  EXPECT_EQ(msg.system_time, 0);
+  EXPECT_EQ(msg.local_time, 160702U);
+  EXPECT_EQ(msg.system_time, 0U);
   EXPECT_NEAR(msg.voltage, 4.847f, kAbsError);
-  EXPECT_EQ(msg.nodes.size(), 4);
+  EXPECT_EQ(msg.nodes.size(), 4U);
 
   EXPECT_NEAR(msg.nodes[0].dis, 0.767f, kAbsError);
   EXPECT_NEAR(msg.nodes[0].angle, 28.50f, kAbsError);
@@ -565,8 +543,6 @@ TEST(nlink_parser, linktrack_aoa)
 int main(int argc, char **argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  // ros::init(argc, argv, "test_nlink_parser");
-  // ros::NodeHandle nh;
   rclcpp::init(argc, argv);
   return RUN_ALL_TESTS();
 }
