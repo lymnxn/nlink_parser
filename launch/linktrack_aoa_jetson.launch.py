@@ -7,5 +7,5 @@ def generate_launch_description():
         executable='linktrack_aoa',
         output="screen",
         parameters=[{'port_name':'/dev/ttyTHS0', 
-        'baud_rate':921600}]
+        'baud_rate':3000000}]
     )])
