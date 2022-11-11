@@ -1,6 +1,5 @@
 #include "init_serial.h"
 
-// #include <ros/ros.h>
 #include "rclcpp/rclcpp.hpp"
 
 #include <string>
@@ -19,22 +18,28 @@ void enumerate_ports() {
 }
 */
 
-void initSerial(serial::Serial *serial, rclcpp::Node::ConstSharedPtr node)
+void initSerial(serial::Serial *serial, rclcpp::Node::SharedPtr node)
 {
   try
   {
-    std::string port_name("/dev/ttyUSB0");
-    if(node->get_parameter<std::string>("~port_name", port_name))
-    {
-      RCLCPP_ERROR(node->get_logger(), "Fail to read port_name, %s", port_name.c_str());
-      port_name = std::string("dev/ttyUSB0");
-    }
-    int baud_rate(921600);
-    if(!node->get_parameter<int>("~baud_rate", baud_rate))
-    {
-      RCLCPP_ERROR(node->get_logger(), "Fail to read baud_rate, %d", baud_rate);
-      baud_rate = 921600;
-    }
+    node->declare_parameter("port_name", "/dev/ttyUSB0");
+    node->declare_parameter<int>("baud_rate", 921600);
+
+    std::string port_name = node->get_parameter("port_name").get_parameter_value().get<std::string>();
+    int baud_rate = node->get_parameter("baud_rate").get_parameter_value().get<int>();
+
+    // std::string port_name("/dev/ttyUSB0");
+    // if(!node->get_parameter<std::string>("port_name", port_name))
+    // {
+    //   RCLCPP_ERROR(node->get_logger(), "Fail to read port_name, %s", port_name.c_str());
+    //   port_name = std::string("dev/ttyUSB0");
+    // }
+    // int baud_rate(921600);
+    // if(!node->get_parameter<int>("baud_rate", baud_rate))
+    // {
+    //   RCLCPP_ERROR(node->get_logger(), "Fail to read baud_rate, %d", baud_rate);
+    //   baud_rate = 921600;
+    // }
 
     serial->setPort(port_name);
     serial->setBaudrate(static_cast<uint32_t>(baud_rate));

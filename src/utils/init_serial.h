@@ -3,6 +3,6 @@
 #include <serial/serial.h>
 #include "rclcpp/rclcpp.hpp"
 
-void initSerial(serial::Serial *serial, rclcpp::Node::ConstSharedPtr node);
+void initSerial(serial::Serial *serial, rclcpp::Node::SharedPtr node);
 
 #endif // INITSERIAL_H
